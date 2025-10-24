@@ -83,13 +83,13 @@ export default function SignInPage() {
           <Link href="/auth/sign-up" className="text-sm text-primary hover:underline block">
             Don't have an account? Sign up
           </Link>
-          <button
-            type="button"
-            className="text-sm text-muted-foreground hover:underline"
-            onClick={() => toast.info('Password reset coming soon!')}
-          >
-            Forgot password?
-          </button>
+            <button
+              type="button"
+              className="text-sm text-muted-foreground hover:underline"
+              onClick={() => toast('Password reset coming soon!')}
+            >
+              Forgot password?
+            </button>
         </div>
       </Card>
     </div>
