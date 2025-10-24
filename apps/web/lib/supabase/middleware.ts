@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -67,7 +69,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect authenticated users away from auth pages
-  if ((request.nextUrl.pathname.startsWith('/auth/sign-in') || 
+  if ((request.nextUrl.pathname.startsWith('/auth/sign-in') ||
        request.nextUrl.pathname.startsWith('/auth/sign-up')) && user) {
     return NextResponse.redirect(new URL('/', request.url));
   }
