@@ -1,0 +1,42 @@
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
+import { Navigation } from '@/components/shared/Navigation';
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'MyFuel — Personal Diet & Goals Tracker',
+  description: 'Track your nutrition, macros, and fitness goals offline-first',
+  manifest: '/manifest.json',
+  themeColor: '#3b82f6',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'MyFuel',
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <div className="min-h-screen bg-background">
+            <Navigation />
+            <main className="container mx-auto px-4 py-8 max-w-7xl">
+              {children}
+            </main>
+          </div>
+          <Toaster position="top-right" />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}

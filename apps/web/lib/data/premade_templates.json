@@ -1,0 +1,114 @@
+[
+  {
+    "name": "High Protein Breakfast",
+    "description": "Perfect post-workout morning meal",
+    "items": [
+      { "foodName": "Eggs, whole, raw", "quantity": 150 },
+      { "foodName": "Oats, raw", "quantity": 50 },
+      { "foodName": "Banana", "quantity": 120 },
+      { "foodName": "Peanut Butter", "quantity": 15 }
+    ],
+    "totalKcal": 547,
+    "totalProtein": 27,
+    "totalCarbs": 60,
+    "totalFat": 20
+  },
+  {
+    "name": "Chicken & Rice Bowl",
+    "description": "Classic bodybuilding meal",
+    "items": [
+      { "foodName": "Chicken Breast, cooked", "quantity": 200 },
+      { "foodName": "Brown Rice, cooked", "quantity": 200 },
+      { "foodName": "Broccoli", "quantity": 150 }
+    ],
+    "totalKcal": 605,
+    "totalProtein": 70,
+    "totalCarbs": 68,
+    "totalFat": 5
+  },
+  {
+    "name": "Salmon Power Lunch",
+    "description": "Omega-3 rich balanced meal",
+    "items": [
+      { "foodName": "Salmon, cooked", "quantity": 150 },
+      { "foodName": "Sweet Potato, raw", "quantity": 200 },
+      { "foodName": "Asparagus", "quantity": 100 },
+      { "foodName": "Olive Oil", "quantity": 10 }
+    ],
+    "totalKcal": 571,
+    "totalProtein": 40,
+    "totalCarbs": 52,
+    "totalFat": 21
+  },
+  {
+    "name": "Quick Protein Shake",
+    "description": "Fast post-workout nutrition",
+    "items": [
+      { "foodName": "Whey Protein Powder", "quantity": 30 },
+      { "foodName": "Banana", "quantity": 120 },
+      { "foodName": "Peanut Butter", "quantity": 20 },
+      { "foodName": "Milk, skim", "quantity": 300 }
+    ],
+    "totalKcal": 400,
+    "totalProtein": 38,
+    "totalCarbs": 45,
+    "totalFat": 12
+  },
+  {
+    "name": "Greek Yogurt Parfait",
+    "description": "High protein snack or breakfast",
+    "items": [
+      { "foodName": "Greek Yogurt, plain, nonfat", "quantity": 200 },
+      { "foodName": "Blueberries", "quantity": 100 },
+      { "foodName": "Granola", "quantity": 40 },
+      { "foodName": "Honey", "quantity": 15 }
+    ],
+    "totalKcal": 395,
+    "totalProtein": 24,
+    "totalCarbs": 70,
+    "totalFat": 8
+  },
+  {
+    "name": "Steak & Veggies",
+    "description": "High protein dinner",
+    "items": [
+      { "foodName": "Steak, sirloin, raw", "quantity": 200 },
+      { "foodName": "Potato, white, raw", "quantity": 200 },
+      { "foodName": "Green Beans", "quantity": 150 },
+      { "foodName": "Butter, salted", "quantity": 10 }
+    ],
+    "totalKcal": 738,
+    "totalProtein": 50,
+    "totalCarbs": 52,
+    "totalFat": 37
+  },
+  {
+    "name": "Tuna Salad Bowl",
+    "description": "Light, protein-rich lunch",
+    "items": [
+      { "foodName": "Tuna, canned in water", "quantity": 150 },
+      { "foodName": "Lettuce", "quantity": 100 },
+      { "foodName": "Tomato", "quantity": 100 },
+      { "foodName": "Avocado", "quantity": 50 },
+      { "foodName": "Olive Oil", "quantity": 10 }
+    ],
+    "totalKcal": 350,
+    "totalProtein": 42,
+    "totalCarbs": 12,
+    "totalFat": 18
+  },
+  {
+    "name": "Pre-Workout Energy",
+    "description": "Carb-loaded energy boost",
+    "items": [
+      { "foodName": "Banana", "quantity": 150 },
+      { "foodName": "Oats, raw", "quantity": 40 },
+      { "foodName": "Peanut Butter", "quantity": 15 },
+      { "foodName": "Honey", "quantity": 10 }
+    ],
+    "totalKcal": 395,
+    "totalProtein": 11,
+    "totalCarbs": 68,
+    "totalFat": 11
+  }
+]
