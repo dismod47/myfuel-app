@@ -111,7 +111,7 @@ export default function FoodsPage() {
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(food)}>
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(food.id!)}>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(Number(food.id!))}>
                         Delete
                       </Button>
                     </td>
