@@ -59,7 +59,7 @@ export function FoodDialog({ open, onOpenChange, food, onSave }: Props) {
     };
 
     if (food?.id) {
-      await db.foods.update(food.id, foodData);
+      await db.foods.update(Number(food.id), foodData);
       toast.success('Food updated');
     } else {
       await db.foods.add(foodData);
