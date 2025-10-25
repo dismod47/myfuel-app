@@ -61,3 +61,17 @@ export interface Settings {
   // add any others used in your UI as optional:
   pwaInstalled?: boolean;
 }
+
+/**
+ * Weight log entry used by apps/web (weekly page, charts).
+ * Keep fields permissive to avoid breaking callers.
+ */
+export interface Weight {
+  /** ISO date string: 'yyyy-MM-dd' */
+  date: string;
+  /** main numeric weight value; some code may reference 'weight' or 'value' */
+  weight?: number;
+  value?: number;
+  /** optional id if persisted in IndexedDB/DB */
+  id?: number | string;
+}
