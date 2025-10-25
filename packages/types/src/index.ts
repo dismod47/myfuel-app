@@ -48,3 +48,16 @@ export interface Template {
   items: Array<{ foodId: number; quantity: number }>;
   createdAt: Date;
 }
+
+/**
+ * Settings used by apps/web (Settings page).
+ * All fields optional so this is non-breaking.
+ */
+export interface Settings {
+  theme?: 'system' | 'light' | 'dark';
+  units?: 'imperial' | 'metric';
+  accentColor?: string;
+  proteinFirst?: boolean;
+  // add any others used in your UI as optional:
+  pwaInstalled?: boolean;
+}
