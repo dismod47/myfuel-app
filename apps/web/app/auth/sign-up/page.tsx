@@ -43,16 +43,22 @@ export default function SignUpPage() {
 
       if (error) {
         toast.error(error.message);
+        setLoading(false);
         return;
       }
 
       if (data.user) {
-        toast.success('Account created! Please check your email to verify.');
-        router.push('/auth/sign-in');
+        // Check if email confirmation is required
+        if (data.user.identities && data.user.identities.length === 0) {
+          toast.error('Email already registered. Please sign in.');
+          router.push('/auth/sign-in');
+        } else {
+          toast.success('Account created! You can now sign in.');
+          router.push('/auth/sign-in');
+        }
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
-    } finally {
       setLoading(false);
     }
   };
