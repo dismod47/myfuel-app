@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { db } from '@/lib/db/db';
-import { searchUSDA, convertUSDAFood } from '@/lib/api/usda';
+import { searchUSDAFoods, convertUSDAToLocalFood, type USDAFood } from '@/lib/api/usda';
 import toast from 'react-hot-toast';
 import type { Food } from '@myfuel/types';
+import { Loader2 } from 'lucide-react';
 
 interface Props {
   currentDate: string;
@@ -18,60 +19,81 @@ interface Props {
 export function SmartTextInput({ currentDate, onAdded }: Props) {
   const [input, setInput] = useState('');
   const [meal, setMeal] = useState('snack');
-  const [allFoods, setAllFoods] = useState<any[]>([]);
-  const [matchedFoods, setMatchedFoods] = useState<any[]>([]);
+  const [localFoods, setLocalFoods] = useState<Food[]>([]);
+  const [usdaFoods, setUsdaFoods] = useState<USDAFood[]>([]);
+  const [matchedFoods, setMatchedFoods] = useState<(Food | USDAFood)[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [selectedFood, setSelectedFood] = useState<Food | USDAFood | null>(null);
   const [quantity, setQuantity] = useState('100');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<any>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    loadFoods();
+    loadLocalFoods();
   }, []);
 
-  const loadFoods = async () => {
+  const loadLocalFoods = async () => {
     const foods = await db.foods.toArray();
-    setAllFoods(foods);
+    setLocalFoods(foods);
   };
 
   useEffect(() => {
     if (input.trim().length > 2) {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      
-      timeoutRef.current = setTimeout(async () => {
+      // Clear previous timeout
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // Debounce API search
+      searchTimeoutRef.current = setTimeout(async () => {
         setSearching(true);
-        const searchTerm = input.toLowerCase().trim();
         
-        // Local foods
-        const local = allFoods
-          .filter(f => f.name.toLowerCase().includes(searchTerm))
-          .slice(0, 5)
-          .map(f => ({ ...f, source: 'local' }));
+        // Search local foods first
+        const searchTerm = input.toLowerCase().trim();
+        const localMatches = localFoods
+          .filter(food => food.name.toLowerCase().includes(searchTerm))
+          .slice(0, 5);
 
-        // USDA foods
-        const usda = await searchUSDA(input);
-        const usdaMapped = usda.slice(0, 10).map((f: any) => ({ ...f, source: 'usda' }));
-
-        setMatchedFoods([...local, ...usdaMapped]);
-        setShowDropdown(local.length + usdaMapped.length > 0);
-        setSelectedIndex(0);
-        setSearching(false);
-      }, 500);
+        // Search USDA API
+        try {
+          const result = await searchUSDAFoods(input, 10);
+          setUsdaFoods(result.foods || []);
+          
+          // Combine results: local first, then USDA
+          const combined = [...localMatches, ...result.foods.slice(0, 10)];
+          setMatchedFoods(combined);
+          setShowDropdown(combined.length > 0);
+          setSelectedIndex(0);
+        } catch (error) {
+          console.error('API search failed:', error);
+          // Fallback to local only
+          setMatchedFoods(localMatches);
+          setShowDropdown(localMatches.length > 0);
+          setSelectedIndex(0);
+        } finally {
+          setSearching(false);
+        }
+      }, 500); // 500ms debounce
     } else {
       setShowDropdown(false);
       setMatchedFoods([]);
     }
 
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
-  }, [input, allFoods]);
+  }, [input, localFoods]);
 
-  const handleFoodClick = (food: any) => {
+  const isLocalFood = (food: Food | USDAFood): food is Food => {
+    return 'id' in food;
+  };
+
+  const handleFoodClick = (food: Food | USDAFood) => {
     setSelectedFood(food);
     setQuantity('100');
     setShowDropdown(false);
@@ -90,20 +112,21 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
 
       let foodToAdd: Food;
 
-      if (selectedFood.source === 'usda') {
-        const converted = convertUSDAFood(selectedFood);
-        const existing = await db.foods
+      // If it's a USDA food, save it to local DB first
+      if (!isLocalFood(selectedFood)) {
+        const convertedFood = convertUSDAToLocalFood(selectedFood);
+        const existingFood = await db.foods
           .where('usdaFdcId')
           .equals(selectedFood.fdcId)
           .first();
 
-        if (existing) {
-          foodToAdd = existing;
+        if (existingFood) {
+          foodToAdd = existingFood;
         } else {
-          const id = await db.foods.add(converted);
-          foodToAdd = { ...converted, id };
-          toast.success(`Added "${foodToAdd.name}" to library!`);
-          loadFoods();
+          const id = await db.foods.add(convertedFood);
+          foodToAdd = { ...convertedFood, id };
+          toast.success(`Added "${foodToAdd.name}" to your food library!`);
+          loadLocalFoods(); // Refresh local foods
         }
       } else {
         foodToAdd = selectedFood;
@@ -129,11 +152,13 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
       onAdded();
     } catch (error) {
       toast.error('Failed to add food');
+      console.error(error);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) return;
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex(prev => (prev + 1) % matchedFoods.length);
@@ -150,27 +175,27 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
     }
   };
 
-  const getDisplay = (food: any) => {
-    if (food.source === 'local') {
+  const getFoodDisplay = (food: Food | USDAFood) => {
+    if (isLocalFood(food)) {
       return {
         name: food.name,
         brand: food.brand || 'Local',
         kcal: food.kcalPerUnit.toFixed(0),
-        p: food.proteinPerUnit.toFixed(1),
-        c: food.carbPerUnit.toFixed(1),
-        f: food.fatPerUnit.toFixed(1),
-        tag: '📁'
+        protein: food.proteinPerUnit.toFixed(1),
+        carbs: food.carbPerUnit.toFixed(1),
+        fat: food.fatPerUnit.toFixed(1),
+        source: '📁 Saved'
       };
     } else {
-      const conv = convertUSDAFood(food);
+      const converted = convertUSDAToLocalFood(food);
       return {
         name: food.description,
         brand: food.brandOwner || 'USDA',
-        kcal: conv.kcalPerUnit.toFixed(0),
-        p: conv.proteinPerUnit.toFixed(1),
-        c: conv.carbPerUnit.toFixed(1),
-        f: conv.fatPerUnit.toFixed(1),
-        tag: '🌐'
+        kcal: converted.kcalPerUnit.toFixed(0),
+        protein: converted.proteinPerUnit.toFixed(1),
+        carbs: converted.carbPerUnit.toFixed(1),
+        fat: converted.fatPerUnit.toFixed(1),
+        source: '🌐 USDA'
       };
     }
   };
@@ -194,29 +219,41 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
           <div className="flex-1 relative">
             <Input
               ref={inputRef}
-              placeholder="Search foods... (type 3+ chars for USDA search)"
+              placeholder="Search foods... (local + USDA database)"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => input.length > 2 && setShowDropdown(true)}
             />
             
+            {searching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            
             {showDropdown && matchedFoods.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-80 overflow-y-auto">
                 {matchedFoods.map((food, index) => {
-                  const display = getDisplay(food);
-                  const key = food.source === 'local' ? `l-${food.id}` : `u-${food.fdcId}`;
+                  const display = getFoodDisplay(food);
                   return (
                     <div
-                      key={key}
+                      key={isLocalFood(food) ? `local-${food.id}` : `usda-${food.fdcId}`}
                       className={`px-4 py-3 cursor-pointer hover:bg-accent ${
                         index === selectedIndex ? 'bg-accent' : ''
                       }`}
                       onClick={() => handleFoodClick(food)}
                     >
-                      <div className="font-medium">{display.tag} {display.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {display.brand} • {display.kcal} kcal, P: {display.p}g, C: {display.c}g, F: {display.f}g
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium">{display.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {display.brand} • {display.source}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {display.kcal} kcal, P: {display.protein}g, C: {display.carbs}g, F: {display.fat}g (per 100g)
                       </div>
                     </div>
                   );
@@ -226,19 +263,21 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          {searching ? 'Searching USDA...' : 'Type 3+ characters to search 300,000+ foods'}
+          {searching ? 'Searching USDA database...' : `Search from local library + USDA FoodData Central`}
         </p>
       </Card>
 
       <Dialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>How much?</DialogTitle>
+            <DialogTitle>
+              How much {selectedFood && getFoodDisplay(selectedFood).name}?
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Quantity (grams)
+                Quantity (in grams)
               </label>
               <Input
                 type="number"
@@ -253,14 +292,14 @@ export function SmartTextInput({ currentDate, onAdded }: Props) {
               <div className="p-3 bg-muted rounded-md">
                 <p className="text-sm font-medium mb-1">Nutritional Info:</p>
                 {(() => {
-                  const d = getDisplay(selectedFood);
-                  const m = parseFloat(quantity) / 100;
+                  const display = getFoodDisplay(selectedFood);
+                  const multiplier = parseFloat(quantity) / 100;
                   return (
                     <p className="text-sm text-muted-foreground">
-                      {(parseFloat(d.kcal) * m).toFixed(0)} kcal • 
-                      P: {(parseFloat(d.p) * m).toFixed(1)}g • 
-                      C: {(parseFloat(d.c) * m).toFixed(1)}g • 
-                      F: {(parseFloat(d.f) * m).toFixed(1)}g
+                      {(parseFloat(display.kcal) * multiplier).toFixed(0)} kcal • 
+                      P: {(parseFloat(display.protein) * multiplier).toFixed(1)}g • 
+                      C: {(parseFloat(display.carbs) * multiplier).toFixed(1)}g • 
+                      F: {(parseFloat(display.fat) * multiplier).toFixed(1)}g
                     </p>
                   );
                 })()}
