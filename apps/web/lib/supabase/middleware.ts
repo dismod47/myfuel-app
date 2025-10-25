@@ -1,5 +1,3 @@
-export const runtime = 'nodejs';
-
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -61,17 +59,17 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes - require authentication
-  const protectedPaths = ['/foods', '/templates', '/weekly', '/goals', '/settings', '/profile'];
+  const protectedPaths = ['/dashboard', '/foods', '/templates', '/weekly', '/goals', '/settings', '/profile'];
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
 
   if (isProtectedPath && !user) {
     return NextResponse.redirect(new URL('/auth/sign-in', request.url));
   }
 
-  // Redirect authenticated users away from auth pages
-  if ((request.nextUrl.pathname.startsWith('/auth/sign-in') ||
+  // Redirect authenticated users away from auth pages to dashboard
+  if ((request.nextUrl.pathname.startsWith('/auth/sign-in') || 
        request.nextUrl.pathname.startsWith('/auth/sign-up')) && user) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;

@@ -1,41 +1,12 @@
-import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
-export default withAuth(
-  function middleware(req) {
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-        
-        // Public routes
-        const publicRoutes = [
-          '/',
-          '/auth/sign-in',
-          '/auth/sign-up',
-          '/api/auth',
-        ];
-
-        const isPublic = publicRoutes.some(route => 
-          pathname.startsWith(route)
-        ) || pathname.match(/^\/(favicon\.ico|_next\/|manifest\.)/);
-
-        if (isPublic) return true;
-
-        // All other routes require authentication
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: '/auth/sign-in',
-    },
-  }
-);
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
+}
 
 export const config = {
   matcher: [
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\..*|auth/sign-in|auth/sign-up).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

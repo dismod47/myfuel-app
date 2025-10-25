@@ -30,7 +30,7 @@ export default function SignInPage() {
         toast.error('Invalid email or password');
       } else {
         toast.success('Signed in successfully!');
-        router.push('/');
+        router.push('/dashboard');;
         router.refresh();
       }
     } catch (error) {
