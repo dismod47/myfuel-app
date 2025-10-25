@@ -70,7 +70,7 @@ export default function TodayPage() {
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
-              size="icon"
+              size="sm"
               onClick={handlePreviousDay}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -94,7 +94,7 @@ export default function TodayPage() {
 
             <Button 
               variant="outline" 
-              size="icon"
+              size="sm"
               onClick={handleNextDay}
             >
               <ChevronRight className="w-4 h-4" />
