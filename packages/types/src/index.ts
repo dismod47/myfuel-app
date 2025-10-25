@@ -75,3 +75,15 @@ export interface Weight {
   /** optional id if persisted in IndexedDB/DB */
   id?: number | string;
 }
+
+/**
+ * SyncState tracks local<->remote sync metadata for Dexie.
+ * All fields optional so we don't break builds if shapes differ.
+ */
+export interface SyncState {
+  id?: number | string;          // primary key in IndexedDB
+  lastSyncedAt?: string;         // ISO timestamp of last successful sync
+  pending?: boolean;             // true if there are unsynced local changes
+  table?: string;                // e.g. "foods", "logs", etc.
+  error?: string;                // last sync error message if any
+}
