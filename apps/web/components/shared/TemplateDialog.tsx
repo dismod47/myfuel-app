@@ -58,7 +58,7 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Props) 
     };
 
     if (template?.id) {
-      await db.templates.update(template.id, templateData);
+      await db.templates.update(template.id, { ...templateData });
       toast.success('Template updated');
     } else {
       await db.templates.add(templateData);
