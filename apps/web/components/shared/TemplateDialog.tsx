@@ -54,7 +54,6 @@ export function TemplateDialog({ open, onOpenChange, template, onSave }: Props) 
       name,
       items,
       createdAt: template?.createdAt || new Date(),
-      updatedAt: new Date(),
     };
 
     if (template?.id) {
