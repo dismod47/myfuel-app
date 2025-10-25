@@ -1,3 +1,18 @@
+export interface Food {
+  id?: number;
+  name: string;
+  brand: string | null;
+  unitDefault: 'g' | 'ml' | 'serving';
+  servingName: string | null;
+  servingGrams: number | null;
+  kcalPerUnit: number;
+  proteinPerUnit: number;
+  carbPerUnit: number;
+  fatPerUnit: number;
+  usdaFdcId?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface Log {
   id?: number;
@@ -72,31 +87,3 @@ export interface SyncState {
   table?: string;                // e.g. "foods", "logs", etc.
   error?: string;                // last sync error message if any
 }
-
-/**
- * A food item in the local DB.
- * Most fields are optional so demo data and first-run seeds don't break type checking.
- */
-export interface Food {
-  id?: number | string;
-
-  // basic identity
-  name: string;
-  brand?: string;
-
-  // how it's measured
-  unitDefault: string;           // e.g. "g", "ml", "serving"
-  servingName?: string;          // e.g. "scoop", "slice"
-  servingGrams?: number;         // gram weight for 1 serving
-
-  // macros per 1 unit of `unitDefault`
-  kcalPerUnit: number;
-  proteinPerUnit: number;
-  carbPerUnit: number;
-  fatPerUnit: number;
-
-  // lifecycle
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-}
-
